@@ -15,6 +15,11 @@ class AppController {
     return res.status(200).json({ redis: clientRedis.isAlive(), db: clientDB.isAlive() });
   }
 
+/**
+ * Returns the number of users and files in the db
+ * @param {*} req 
+ * @param {*} res 
+ */
   static async getStats(req, res) {
     try {
       const users = await clientDB.nbUsers();
