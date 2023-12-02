@@ -1,8 +1,12 @@
 import express from 'express';
-import router from './routes/index';
+import startServer from './libs/boot';
+import injectRoutes from './routes';
+import injectMiddlewares from './libs/middlewares';
 
-const app = express();
+const server = express();
 
-app.use(router);
+injectMiddlewares(server);
+injectRoutes(server);
+startServer(server);
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+export default server;
