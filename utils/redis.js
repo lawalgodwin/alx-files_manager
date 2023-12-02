@@ -2,37 +2,28 @@ import { createClient } from 'redis';
 import { promisify } from 'util';
 
 class RedisClient {
-  constructor() {
-    this._client = createClient();
-    this._isConnected = true;
-    this._client.on('connect', () => {
-    //   console.log(this._client.connected);2222222
-      this._isConnected = true;
-    });
-    this._client.on('error', (error) => {
-      console.log('Error connecting to redis', error);
-      this._isConnected = false;
-    });
+  constructor () {
+    this.myClient = createClient();
+    this.myClient.on('error', (error) => console.log(error));
   }
 
-  isAlive() {
-    return this._isConnected;
+  isAlive () {
+    return this.myClient.connected;
   }
 
-  async get(key) {
-    const getValueFor = promisify(this._client.get).bind(this._client);
-    const value = await getValueFor(key);
-    return value;
+  async get (key) {
+    const getAsync = promisify(this.myClient.GET).bind(this.myClient);
+    return getAsync(key);
   }
 
-  async set(key, value, duration) {
-    const clientSet = await promisify(this._client.setex).bind(this._client);
-    return clientSet(key, duration, value);
+  async set (key, val, time) {
+    const setAsync = promisify(this.myClient.SET).bind(this.myClient);
+    return setAsync(key, val, 'EX', time);
   }
 
-  async del(key) {
-    const deleteFor = await promisify(this._client.del).bind(this._client);
-    return deleteFor(key);
+  async del (key) {
+    const delAsync = promisify(this.myClient.DEL).bind(this.myClient);
+    return delAsync(key);
   }
 }
 

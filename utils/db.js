@@ -1,48 +1,36 @@
 import { MongoClient } from 'mongodb';
 
+const HOST = process.env.DB_HOST || 'localhost';
+const PORT = process.env.DB_PORT || 27017;
+const DATABASE = process.env.DB_DATABASE || 'files_manager';
+const url = `mongodb://${HOST}:${PORT}`;
+
 class DBClient {
-  constructor() {
-    this.isConnected = false;
-    const host = process.env.DB_HOST || 'localhost';
-    const port = process.env.DB_PORT || 27017;
-    const database = process.env.DB_DATABASE || 'files_manager';
-    const server = `mongodb://${host}:${port}`;
-    this._client = new MongoClient(server, {
-      useNewUrlParser: true, useUnifiedTopology: true,
-    });
-    this._client.connect().then(() => {
-      this.isConnected = true;
-      this.db = this._client.db(database);
-    }).catch(() => {
-      this.isConnected = false;
+  constructor () {
+    this.client = new MongoClient(url, { useUnifiedTopology: true, useNewUrlParser: true });
+    this.client.connect().then(() => {
+      this.db = this.client.db(`${DATABASE}`);
+    }).catch((err) => {
+      console.log(err);
     });
   }
-  /**
-   * Check if client is connected to the db
-   * @returns {Promise<Number>}
-   */
 
-  isAlive() {
-    return this.isConnected;
+  isAlive () {
+    return this.client.isConnected();
   }
 
-  /**
-   * Return the number of documents in the users collection
-   * @returns {Promise<Number>}
-   */
-  async nbUsers() {
-    const count = await this.db.collection('users').countDocuments();
-    return count;
+  async nbUsers () {
+    const users = this.db.collection('users');
+    const usersNum = await users.countDocuments();
+    return usersNum;
   }
 
-  /**
-   * Returns the number of documents in the files collection
-   * @returns {integer}
-   */
-  async nbFiles() {
-    const count = await this.db.collection('files').countDocuments();
-    return count;
+  async nbFiles () {
+    const files = this.db.collection('files');
+    const filesNum = await files.countDocuments();
+    return filesNum;
   }
 }
 
-export default new DBClient();
+const dbClient = new DBClient();
+module.exports = dbClient;
